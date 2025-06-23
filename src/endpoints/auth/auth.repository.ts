@@ -8,7 +8,7 @@ export const getUserByEmail = async (email: string) => {
     return rows.length > 0 ? (rows[0] as UsersBody) : null;
 };
 
-export const getUserPermissions = async (user_id: number) => {
+export const getUserPermissions = async (user_id: number): Promise<string[]> => {
     const pool = getPool();
     const query = `
         SELECT CONCAT(
@@ -23,8 +23,8 @@ export const getUserPermissions = async (user_id: number) => {
         JOIN user_roles ur ON r.role_id = ur.role_id
         WHERE ur.user_id = ?;
     `;
-    const [rows] = await pool.query(query, [user_id]);
-    return rows;
+    const [rows] = await pool.query<RowDataPacket[]>(query, [user_id]);
+    return rows.map(row => row.permission_name as string);
 };
 
 export const signupUser = async (user: SignupUsersBody) => {
