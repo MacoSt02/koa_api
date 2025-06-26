@@ -8,14 +8,20 @@ export const getUserByEmail = async (email: string) => {
     return rows.length > 0 ? (rows[0] as UsersBody) : null;
 };
 
+export const reactivateUser = async (email: string) => {
+    const pool = getPool();
+    const [rows] = await pool.query<ResultSetHeader>('UPDATE users SET deleted_at = NULL WHERE email = ?;', [email]);
+    return rows;
+};
+
 export const getUserPermissions = async (user_id: number): Promise<string[]> => {
     const pool = getPool();
     const query = `
         SELECT CONCAT(
-            UPPER(LEFT(SUBSTRING_INDEX(SUBSTRING_INDEX(p.permission_name, ':', -2), ':', -1), 1)),
-            LOWER(SUBSTRING(SUBSTRING_INDEX(SUBSTRING_INDEX(p.permission_name, ':', -2), ':', -1), 2)),
-            UPPER(LEFT(SUBSTRING_INDEX(SUBSTRING_INDEX(p.permission_name, ':', -2), ':', 1), 1)),
-            LOWER(SUBSTRING(SUBSTRING_INDEX(SUBSTRING_INDEX(p.permission_name, ':', -2), ':', 1), 2))
+            UPPER(SUBSTRING(SUBSTRING_INDEX(p.permission_name, ':', -1), 1, 1)),
+            LOWER(SUBSTRING(SUBSTRING_INDEX(p.permission_name, ':', -1), 2)),
+            UPPER(SUBSTRING(SUBSTRING_INDEX(p.permission_name, ':', 1), 1, 1)),
+            LOWER(SUBSTRING(SUBSTRING_INDEX(p.permission_name, ':', 1), 2))
         ) AS permission_name
         FROM permissions p
         JOIN role_permissions rp ON p.permission_id = rp.permission_id

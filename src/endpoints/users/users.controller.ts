@@ -1,5 +1,8 @@
 import { Context } from 'koa';
+import bcrypt from 'bcryptjs';
 import * as usersRepository from './users.repository';
+import * as authRepository from '../auth/auth.repository';
+import { CreateUserBody } from './users.model';
 
 export const getUsers = async (ctx: Context) => {
     try {
@@ -26,6 +29,40 @@ export const getUsers = async (ctx: Context) => {
         ctx.body = {
             success: false,
             message: 'Error retrieving users: ' + e,
+            code: 'INTERNAL_SERVER_ERROR',
+        };
+    }
+};
+
+export const createUser = async (ctx: Context) => {
+    try {
+        const user = ctx.request.body as CreateUserBody;
+        const userExists = await authRepository.getUserByEmail(user.email);
+        if (userExists !== null) {
+            ctx.status = 400;
+            ctx.body = {
+                success: false,
+                message: 'User already exists',
+                code: 'USER_ALREADY_EXISTS',
+            };
+            return;
+        }
+
+        const salt = await bcrypt.genSalt(12);
+        user.password = await bcrypt.hash(user.password, salt);
+
+        await usersRepository.createUser(user);
+        ctx.status = 200;
+        ctx.body = {
+            success: true,
+            message: 'User created successfully',
+        };
+
+    } catch (e) {
+        ctx.status = 500;
+        ctx.body = {
+            success: false,
+            error: 'Error creating user: ' + e,
             code: 'INTERNAL_SERVER_ERROR',
         };
     }

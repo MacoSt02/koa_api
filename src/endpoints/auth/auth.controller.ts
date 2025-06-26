@@ -39,7 +39,17 @@ export const signupUser = async (ctx: Context) => {
         const user = ctx.request.body as SignupUsersBody;
 
         const userExists = await authRepository.getUserByEmail(user.email);
-        if (Array.isArray(userExists) && userExists.length > 0) {
+        if (userExists !== null) {
+            if (userExists.deleted_at !== null) {
+                await authRepository.reactivateUser(userExists.email);
+                ctx.status = 200;
+                ctx.body = {
+                    success: true,
+                    message: 'User account has been reactivated',
+                    code: 'USER_REACTIVATED',
+                };
+                return;
+            }
             ctx.status = 400;
             ctx.body = {
                 success: false,

@@ -60,14 +60,32 @@ INSERT INTO koa_db.roles(role_name, role_description) VALUES
 ('user', 'Role for common users');
 
 INSERT INTO koa_db.permissions(permission_name, permission_description) VALUES
-('route:users:view', 'Access users list'),
-('route:roles:view', 'Access roles list'),
-('route:permissions:view', 'Access permissions list');
+('users:view', 'Can view users'),
+('users:create', 'Can create users'),
+('users:update', 'Can update users'),
+('users:delete', 'Can delete users'),
+('roles:view', 'Can view roles'),
+('roles:create', 'Can create roles'),
+('roles:update', 'Can update roles'),
+('roles:delete', 'Can delete roles'),
+('permissions:view', 'Can view permissions'),
+('permissions:create', 'Can create permissions'),
+('permissions:update', 'Can update permissions'),
+('permissions:delete', 'Can delete permissions');
 
 INSERT INTO koa_db.role_permissions(role_id, permission_id) VALUES
 (1, 1),
 (1, 2),
 (1, 3),
+(1, 4),
+(1, 5),
+(1, 6),
+(1, 7),
+(1, 8),
+(1, 9),
+(1, 10),
+(1, 11),
+(1, 12),
 (2, 1);
 
 INSERT INTO koa_db.user_roles(user_id, role_id) VALUES

@@ -1,4 +1,6 @@
+import { ResultSetHeader } from 'mysql2';
 import { getPool } from '../../database/connect';
+import { CreateUserBody } from './users.model';
 
 export const getUsers = async (search?: string, active?: string) => {
     const pool = getPool();
@@ -30,6 +32,13 @@ export const getUsers = async (search?: string, active?: string) => {
     }
 
     const [rows] = await pool.query(query += ';', params);
+    return rows;
+};
+
+export const createUser = async (user: CreateUserBody) => {
+    const pool = getPool();
+    const [rows] = await pool.query<ResultSetHeader>('INSERT INTO users (name, email, password) VALUES (?, ?, ?);', [user.name, user.email, user.password]);
+    await pool.query('INSERT INTO user_roles (user_id, role_id) VALUES (?, ?);', [rows.insertId, user.role_id]);
     return rows;
 };
 
