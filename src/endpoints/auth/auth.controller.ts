@@ -4,36 +4,6 @@ import * as authRepository from './auth.repository';
 import { SignupUsersBody, UsersBody } from './auth.model';
 import jwt from 'jsonwebtoken';
 
-export const getAuth = async (ctx: Context) => {
-    try {
-        const token = ctx.cookies.get('authToken');
-        if (!token) {
-            ctx.status = 401;
-            ctx.body = {
-                success: false,
-                message: 'Not authenticated',
-                code: 'BAD_REQUEST',
-            };
-            return;
-        }
-
-        const payload = jwt.verify(token, process.env.JWT_SECRET!) as jwt.JwtPayload;
-        const permissions = await authRepository.getUserPermissions(payload.user_id);
-        ctx.status = 200;
-        ctx.body = {
-            success: true,
-            data: permissions,
-        };
-    } catch (e) {
-        ctx.status = 500;
-        ctx.body = {
-            success: false,
-            message: 'Error: ' + e,
-            code: 'INTERNAL_SERVER_ERROR',
-        };
-    }
-};
-
 export const signupUser = async (ctx: Context) => {
     try {
         const user = ctx.request.body as SignupUsersBody;
@@ -133,12 +103,12 @@ export const loginUser = async (ctx: Context) => {
             return;
         }
 
+        const permissions = await authRepository.getUserPermissions(user.user_id);
         const token = jwt.sign(
             {
                 user_id: user.user_id,
                 email: user.email,
-                role_id: user.role_id,
-                role_name: user.role_name,
+                permissions: permissions,
             },
             process.env.JWT_SECRET!,
             { expiresIn: '24h' },
