@@ -4,3 +4,9 @@ export type CreateUserBody = {
     password: string;
     role_id: number;
 }
+
+export type UpdateUserBody = {
+    name: string;
+    email: string;
+    password: string;
+}

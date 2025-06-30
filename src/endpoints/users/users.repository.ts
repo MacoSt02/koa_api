@@ -1,6 +1,6 @@
 import { ResultSetHeader } from 'mysql2';
 import { getPool } from '../../database/connect';
-import { CreateUserBody } from './users.model';
+import { CreateUserBody, UpdateUserBody } from './users.model';
 
 export const getUsers = async (search?: string, active?: string) => {
     const pool = getPool();
@@ -37,9 +37,15 @@ export const getUsers = async (search?: string, active?: string) => {
 
 export const createUser = async (user: CreateUserBody) => {
     const pool = getPool();
-    const [rows] = await pool.query<ResultSetHeader>('INSERT INTO users (name, email, password) VALUES (?, ?, ?);', [user.name, user.email, user.password]);
-    await pool.query('INSERT INTO user_roles (user_id, role_id) VALUES (?, ?);', [rows.insertId, user.role_id]);
-    return rows;
+    const [result] = await pool.query<ResultSetHeader>('INSERT INTO users (name, email, password) VALUES (?, ?, ?);', [user.name, user.email, user.password]);
+    await pool.query('INSERT INTO user_roles (user_id, role_id) VALUES (?, ?);', [result.insertId, user.role_id]);
+    return result;
+};
+
+export const updateUser = async (user_id: number, user: UpdateUserBody) => {
+    const pool = getPool();
+    const [result] = await pool.query('UPDATE users u SET u.name = ?, u.email = ?, u.password = ? WHERE u.user_id = ?;', [user.name, user.email, user.password, user_id]);
+    return result;
 };
 
 export const deleteUser = async (user_id: number) => {
